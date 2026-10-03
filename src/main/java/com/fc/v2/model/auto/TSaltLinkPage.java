@@ -31,10 +31,15 @@ public class TSaltLinkPage implements Serializable {
     @ApiModelProperty(value = "主键")
     private Long id;
 
-    /** 企业品种挂接代号 */
+    /** 企业品种挂接代号（系统发，人手写不收） */
     @TableField("bill_no")
     @ApiModelProperty(value = "企业品种挂接代号")
     private String billNo;
+
+    /** 随行签认码（系统发，人手写不收） */
+    @TableField("sign_code")
+    @ApiModelProperty(value = "随行签认码")
+    private String signCode;
 
     /** 适用区域层级序 */
     @TableField("node_no")
@@ -122,6 +127,14 @@ public class TSaltLinkPage implements Serializable {
 
     public void setBillNo(String billNo) {
         this.billNo = billNo;
+    }
+
+    public String getSignCode() {
+        return signCode;
+    }
+
+    public void setSignCode(String signCode) {
+        this.signCode = signCode;
     }
 
     public Integer getNodeNo() {

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('食盐定点企业品种挂接名录')"/>
+</head>
+<body class="pear-container">
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">挂接代号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="billNo" placeholder="全段、半段、片段都行" class="layui-input">
+                </div>
+                <label class="layui-form-label">企业代号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="siteNo" placeholder="全段、半段、片段都行" class="layui-input">
+                </div>
+                <label class="layui-form-label">企业类别</label>
+                <div class="layui-input-inline">
+                    <select name="siteType">
+                        <option value="">全部</option>
+                        <option value="制盐企业">制盐企业</option>
+                        <option value="省内批发企业">省内批发企业</option>
+                        <option value="跨省批发企业">跨省批发企业</option>
+                    </select>
+                </div>
+                <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="saltLinkPage-query">
+                    <i class="layui-icon layui-icon-search"></i>
+                    寻页
+                </button>
+                <button type="reset" class="pear-btn pear-btn-md">
+                    <i class="layui-icon layui-icon-refresh"></i>
+                    重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form" style="margin-bottom:10px;">
+            <span class="layui-badge layui-bg-blue">在册页数：<b id="stat-register">0</b></span>
+            <span class="layui-badge layui-bg-green" style="margin-left:12px;">已挂讫：<b id="stat-done">0</b></span>
+            <span class="layui-badge layui-bg-orange" style="margin-left:12px;">压页：<b id="stat-held">0</b></span>
+            <span style="margin-left:12px;color:#999;font-size:12px;">三栏之数与下表逐行出自同一次算；本层无页则整屏空着</span>
+        </div>
+        <table id="saltLinkPage-table" lay-filter="saltLinkPage-table"></table>
+    </div>
+</div>
+</body>
+
+<script type="text/html" id="saltLinkPage-toolbar">
+    <button shiro:hasPermission="salt:saltLinkPage:add" class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
+        <i class="layui-icon layui-icon-add-1"></i>
+        起页
+    </button>
+    <button shiro:hasPermission="salt:saltLinkPage:add" class="pear-btn pear-btn-normal pear-btn-md" lay-event="open">
+        <i class="layui-icon layui-icon-add-circle"></i>
+        另路起页
+    </button>
+</script>
+
+<script type="text/html" id="saltLinkPage-bar">
+    <button shiro:hasPermission="salt:saltLinkPage:edit" class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit" title="改页"><i class="layui-icon layui-icon-edit"></i></button>
+    <button shiro:hasPermission="salt:saltLinkPage:remove" class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove" title="删页"><i class="layui-icon layui-icon-delete"></i></button>
+</script>
+
+<script type="text/html" id="saltLinkPage-status">
+    {{# if (d.status == 1) { }}
+    <span class="layui-badge layui-bg-green">已挂讫</span>
+    {{# } else if (d.status == 2) { }}
+    <span class="layui-badge layui-bg-orange">压页</span>
+    {{# } else { }}
+    <span class="layui-badge layui-bg-blue">待挂</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="saltLinkPage-node">
+    {{# if (d.nodeNo == 0) { }}省{{# } else if (d.nodeNo == 1) { }}市{{# } else if (d.nodeNo == 2) { }}县{{# } else { }}-{{# } }}
+</script>
+
+<script type="text/html" id="saltLinkPage-site">
+    {{ d.siteName }}
+    {{# if (d.siteStatus == 1) { }}
+    <span class="layui-badge" style="background:#999;">已摘牌·旧页在册</span>
+    {{# } }}
+</script>
+
+<th:block th:include="include :: footer"/>
+<script>
+    layui.use(['table', 'form', 'jquery'], function () {
+        let table = layui.table;
+        let form = layui.form;
+        let $ = layui.jquery;
+
+        let MODULE_PATH = rootPath + "/SaltLinkPageController/";
+        let cols = [[
+            {title: '挂接代号', field: 'billNo', align: 'center', width: 170},
+            {title: '企业代号', field: 'siteNo', align: 'center', width: 110},
+            {title: '企业全称', field: 'siteName', align: 'left', templet: '#saltLinkPage-site', minWidth: 200},
+            {title: '类别', field: 'siteType', align: 'center', width: 130},
+            {title: '属地（省—市—县）', field: 'roadName', align: 'left', minWidth: 200},
+            {title: '层级', field: 'nodeNo', align: 'center', width: 70, templet: '#saltLinkPage-node'},
+            {title: '应挂', field: 'shouldCount', align: 'center', width: 70},
+            {title: '已挂', field: 'doneCount', align: 'center', width: 70},
+            {title: '欠挂', field: 'lackCount', align: 'center', width: 70},
+            {title: '进展', field: 'status', align: 'center', width: 90, templet: '#saltLinkPage-status'},
+            {title: '操作', toolbar: '#saltLinkPage-bar', align: 'center', width: 110, fixed: 'right'}
+        ]];
+
+        // 一屏摆多少条由处里定：limit/limits 可调；本层无页时后端返空，表就空着
+        table.render({
+            elem: '#saltLinkPage-table',
+            url: MODULE_PATH + 'list',
+            page: true,
+            method: 'get',
+            cols: cols,
+            skin: 'line',
+            toolbar: '#saltLinkPage-toolbar',
+            limit: 10,
+            limits: [10, 20, 50, 100],
+            defaultToolbar: ['filter', 'print', 'exports'],
+            parseData: function (res) {
+                $('#stat-register').text(res.registerCount);
+                $('#stat-done').text(res.doneCount);
+                $('#stat-held').text(res.heldCount);
+                return {
+                    code: res.code,
+                    msg: res.msg,
+                    count: res.count,
+                    data: res.data
+                };
+            }
+        });
+
+        form.on('submit(saltLinkPage-query)', function (data) {
+            table.reload('saltLinkPage-table', {page: {curr: 1}, where: data.field});
+            return false;
+        });
+
+        table.on('toolbar(saltLinkPage-table)', function (obj) {
+            if (obj.event === 'add') {
+                window.openForm('');
+            } else if (obj.event === 'open') {
+                // 第二条起页来路：同一页表单，接 /open
+                window.openForm('?mode=open');
+            }
+        });
+
+        table.on('tool(saltLinkPage-table)', function (obj) {
+            if (obj.event === 'edit') {
+                layer.open({
+                    type: 2, title: '改页', shade: 0.1, area: ['560px', '600px'],
+                    content: MODULE_PATH + 'edit/' + obj.data['id']
+                });
+            } else if (obj.event === 'remove') {
+                layer.confirm('确定要删掉这一页？删后不再计入在册页数', {icon: 3, title: '提示'}, function (index) {
+                    layer.close(index);
+                    let loading = layer.load();
+                    $.ajax({
+                        url: MODULE_PATH + "remove",
+                        data: {ids: obj.data['id']},
+                        dataType: 'json', type: 'post',
+                        success: function (result) {
+                            layer.close(loading);
+                            if (result.code == 200) {
+                                layer.msg(result.msg, {icon: 1, time: 1000}, function () {
+                                    table.reload('saltLinkPage-table');
+                                });
+                            } else {
+                                layer.msg(result.msg, {icon: 2});
+                            }
+                        }
+                    });
+                });
+            }
+        });
+
+        // mode=open 走另一条起页来路；两条按同一套说法办
+        window.openForm = function (qs) {
+            layer.open({
+                type: 2, title: qs ? '另路起页' : '起页', shade: 0.1, area: ['560px', '600px'],
+                content: MODULE_PATH + 'add' + qs
+            });
+        };
+    });
+</script>
+</html>

@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS t_salt_iod_line (
 
 CREATE TABLE IF NOT EXISTS t_salt_link_page (
   id bigint NOT NULL COMMENT '主键',
-  bill_no varchar(64) DEFAULT NULL COMMENT '企业品种挂接代号',
+  bill_no varchar(64) DEFAULT NULL COMMENT '企业品种挂接代号(系统发)',
+  sign_code varchar(64) DEFAULT NULL COMMENT '随行签认码(系统发)',
   node_no int DEFAULT NULL COMMENT '适用区域层级序',
   site_id int DEFAULT NULL COMMENT '所属定点企业',
   site_no varchar(64) DEFAULT NULL COMMENT '所属企业代号',
@@ -130,3 +131,17 @@ INSERT IGNORE INTO t_salt_ent (id, site_no, site_name, site_type, road_name, sta
 VALUES (0, 'JY00', '盐泽制盐一厂（制盐企业，在册）', '制盐企业', '盐岭省—盐泽市—临卤县', 0, 0, 'seed', NOW()),
        (1, 'JY01', '青卤批发部（转行后摘牌）', '省内批发企业', '盐岭省—盐泽市—青卤县', 1, 0, 'seed', NOW());
 
+
+-- 已建过库的：随行签认码为新列，补这一句再启（新库由上面的 CREATE TABLE 自带，勿重复执行）。
+-- ALTER TABLE t_salt_link_page ADD COLUMN sign_code varchar(64) DEFAULT NULL COMMENT '随行签认码(系统发)' AFTER bill_no;
+
+-- 名录页菜单与按钮（权限标识与控制器 @RequiresPermissions 对齐）。
+-- 菜单：食盐挂接名录；按钮：起页(add)/改页(edit)/删页(remove)/查看(list)。
+INSERT IGNORE INTO t_sys_permission
+  (id, name, descripion, url, is_blank, pid, perms, type, icon, order_num, visible, create_by, create_time, remark)
+VALUES
+  (91022001, '食盐挂接名录', '食盐定点企业品种挂接名录', '/SaltLinkPageController/view', 0, 0, 'salt:saltLinkPage:view', 1, 'layui-icon-template', 100, 0, 'seed', NOW(), '一家一页，页压属地那一层'),
+  (91022002, '名录查询', '本层属地该露的页与三栏计数', '/SaltLinkPageController/list', 0, 91022001, 'salt:saltLinkPage:list', 2, NULL, 1, 0, 'seed', NOW(), NULL),
+  (91022003, '起页', '两条来路共用同一判定', '/SaltLinkPageController/add', 0, 91022001, 'salt:saltLinkPage:add', 2, NULL, 2, 0, 'seed', NOW(), '另路 /SaltLinkPageController/open 同权限'),
+  (91022004, '改页', '已挂一变/换层重算欠挂', '/SaltLinkPageController/edit', 0, 91022001, 'salt:saltLinkPage:edit', 2, NULL, 3, 0, 'seed', NOW(), NULL),
+  (91022005, '删页', '软删，不再计入在册页数', '/SaltLinkPageController/remove', 0, 91022001, 'salt:saltLinkPage:remove', 2, NULL, 4, 0, 'seed', NOW(), NULL);

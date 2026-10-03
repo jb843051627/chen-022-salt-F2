@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('品种挂接起页')"/>
+</head>
+<body>
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="layui-form-item">
+                <label class="layui-form-label">所对企业</label>
+                <div class="layui-input-block">
+                    <select name="siteId" lay-verify="required" lay-search="">
+                        <option value="">请选择在册定点企业</option>
+                        <option th:each="e : ${roster}"
+                                th:value="${e.id}"
+                                th:text="${e.siteNo} + '｜' + ${e.siteName} + '（' + ${e.siteType} + '）'"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">适用层级</label>
+                <div class="layui-input-block">
+                    <select name="nodeNo" lay-verify="required">
+                        <option value="0">0 省</option>
+                        <option value="1">1 市</option>
+                        <option value="2">2 县</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">应挂品种数</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" name="shouldCount" autocomplete="off" placeholder="非负整数" class="layui-input">
+                </div>
+                <label class="layui-form-label" style="width:110px;">已挂品种数</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" name="doneCount" autocomplete="off" placeholder="不填按 0" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">进展</label>
+                <div class="layui-input-block">
+                    <select name="status">
+                        <option value="0">待挂</option>
+                        <option value="2">压页</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">标签要件</label>
+                <div class="layui-input-block">
+                    <textarea name="content" class="layui-textarea" placeholder="随页交来的标签要件"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <input type="text" name="remark" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item" style="color:#999;font-size:12px;padding-left:110px;">
+                挂接代号、随行签认码由系统发，欠挂品种数由系统折回，页上均无手填之处。
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="layui-btn layui-btn-normal layui-btn-sm" lay-submit lay-filter="saltLinkPage-save">
+                <i class="layui-icon layui-icon-ok"></i>
+                提交起页
+            </button>
+            <button type="reset" class="layui-btn layui-btn-primary layui-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                重置
+            </button>
+        </div>
+    </div>
+</form>
+<th:block th:include="include :: footer"/>
+<script>
+    layui.use(['form', 'jquery'], function () {
+        let form = layui.form;
+        let $ = layui.jquery;
+        let MODULE_PATH = rootPath + "/SaltLinkPageController";
+        // mode=open 即第二条起页来路；与表单来路同一套判定
+        let isOpen = new RegExp('[?&]mode=open\\b').test(location.search);
+        let saveUrl = isOpen ? (MODULE_PATH + '/open') : (MODULE_PATH + '/add');
+
+        form.on('submit(saltLinkPage-save)', function (data) {
+            $.ajax({
+                url: saveUrl,
+                data: data.field,
+                dataType: 'json',
+                type: 'post',
+                success: function (result) {
+                    if (result.code == 200) {
+                        let d = result.data || {};
+                        layer.msg('起页成了，欠挂 ' + d.lackCount, {icon: 1, time: 1200}, function () {
+                            parent.layer.close(parent.layer.getFrameIndex(window.name));
+                            parent.layui.table.reload('saltLinkPage-table');
+                        });
+                    } else {
+                        // 回执逐栏讲明毛病出在哪一栏
+                        layer.alert(result.msg, {icon: 2, title: '这一页起不来'});
+                    }
+                },
+                error: function (xhr) {
+                    let r = xhr.responseJSON || {};
+                    layer.alert(r.msg || '起页没成', {icon: 2, title: '这一页起不来'});
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('品种挂接改页')"/>
+</head>
+<body>
+<form class="layui-form" th:if="${page != null}">
+    <div class="mainBox">
+        <div class="main-container">
+            <input type="hidden" name="id" th:value="${page.id}">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">挂接代号</label>
+                <div class="layui-input-inline" style="width:180px;">
+                    <input type="text" class="layui-input" th:value="${page.billNo}" readonly style="background:#f5f5f5;">
+                </div>
+                <label class="layui-form-label" style="width:110px;">随行签认码</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" class="layui-input" th:value="${page.signCode}" readonly style="background:#f5f5f5;">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">所对企业</label>
+                <div class="layui-input-block">
+                    <input type="text" class="layui-input"
+                           th:value="${page.siteNo} + '｜' + ${page.siteName} + '（' + ${page.siteType} + '）'" readonly style="background:#f5f5f5;">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">适用层级</label>
+                <div class="layui-input-block">
+                    <select name="nodeNo">
+                        <option value="0" th:selected="${page.nodeNo == 0}">0 省</option>
+                        <option value="1" th:selected="${page.nodeNo == 1}">1 市</option>
+                        <option value="2" th:selected="${page.nodeNo == 2}">2 县</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">应挂品种数</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" name="shouldCount" th:value="${page.shouldCount}" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label" style="width:110px;">已挂品种数</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" name="doneCount" th:value="${page.doneCount}" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">欠挂品种数</label>
+                <div class="layui-input-inline" style="width:160px;">
+                    <input type="text" class="layui-input" th:value="${page.lackCount}" readonly
+                           style="background:#f5f5f5;font-weight:bold;color:#FF5722;" title="只许看，不许改——保存时由系统折回">
+                </div>
+                <div class="layui-form-mid layui-word-aux">只许看不许改，保存时按应挂−已挂重算写回</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">进展</label>
+                <div class="layui-input-block">
+                    <select name="status">
+                        <option value="0" th:selected="${page.status == 0}">待挂</option>
+                        <option value="2" th:selected="${page.status == 2}">压页</option>
+                    </select>
+                    <div class="layui-form-mid layui-word-aux">已挂讫不由人手递：欠挂落 0 时系统自落已挂讫</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">标签要件</label>
+                <div class="layui-input-block">
+                    <textarea name="content" class="layui-textarea" th:text="${page.content}"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <input type="text" name="remark" th:value="${page.remark}" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="layui-btn layui-btn-normal layui-btn-sm" lay-submit lay-filter="saltLinkPage-save">
+                <i class="layui-icon layui-icon-ok"></i>
+                保存
+            </button>
+            <button type="reset" class="layui-btn layui-btn-primary layui-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                重置
+            </button>
+        </div>
+    </div>
+</form>
+
+<div th:if="${page == null}" style="padding:30px;color:#FF5722;">
+    这一页不在本层该露的范围里，或已不在册，查它不着。
+</div>
+
+<th:block th:include="include :: footer"/>
+<script>
+    layui.use(['form', 'jquery'], function () {
+        let form = layui.form;
+        let $ = layui.jquery;
+        let MODULE_PATH = rootPath + "/SaltLinkPageController";
+
+        form.on('submit(saltLinkPage-save)', function (data) {
+            $.ajax({
+                url: MODULE_PATH + '/edit',
+                data: data.field,
+                dataType: 'json',
+                type: 'post',
+                success: function (result) {
+                    if (result.code == 200) {
+                        let d = result.data || {};
+                        layer.msg('保存成了，欠挂 ' + d.lackCount, {icon: 1, time: 1200}, function () {
+                            parent.layer.close(parent.layer.getFrameIndex(window.name));
+                            parent.layui.table.reload('saltLinkPage-table');
+                        });
+                    } else {
+                        layer.alert(result.msg, {icon: 2, title: '这一页改不了'});
+                    }
+                },
+                error: function (xhr) {
+                    let r = xhr.responseJSON || {};
+                    layer.alert(r.msg || '保存没成', {icon: 2, title: '这一页改不了'});
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</body>
+</html>
