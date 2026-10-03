@@ -31,10 +31,15 @@ public class TSaltLinkPage implements Serializable {
     @ApiModelProperty(value = "主键")
     private Long id;
 
-    /** 企业品种挂接代号 */
+    /** 企业品种挂接代号（系统发，人手不收） */
     @TableField("bill_no")
-    @ApiModelProperty(value = "企业品种挂接代号")
+    @ApiModelProperty(value = "企业品种挂接代号（系统发）")
     private String billNo;
+
+    /** 随行签认码（系统发，人手不收） */
+    @TableField("sign_code")
+    @ApiModelProperty(value = "随行签认码（系统发）")
+    private String signCode;
 
     /** 适用区域层级序 */
     @TableField("node_no")
@@ -44,12 +49,17 @@ public class TSaltLinkPage implements Serializable {
     /** 所属定点企业 */
     @TableField("site_id")
     @ApiModelProperty(value = "所属定点企业")
-    private Integer siteId;
+    private Long siteId;
 
     /** 所属企业代号 */
     @TableField("site_no")
     @ApiModelProperty(value = "所属企业代号")
     private String siteNo;
+
+    /** 页归属的属地那一路(省—市—县，压在企业属地那一层) */
+    @TableField("scope_road")
+    @ApiModelProperty(value = "页归属的属地那一路(省—市—县)")
+    private String scopeRoad;
 
     /** 应挂品种数 */
     @TableField("should_count")
@@ -108,6 +118,16 @@ public class TSaltLinkPage implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    /** 企业全称（随名录页拼上展示，不入库） */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "企业全称（展示用）")
+    private String siteName;
+
+    /** 企业类别（随名录页拼上展示，不入库） */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "企业类别（展示用）")
+    private String siteType;
+
     public Long getId() {
         return id;
     }
@@ -124,6 +144,14 @@ public class TSaltLinkPage implements Serializable {
         this.billNo = billNo;
     }
 
+    public String getSignCode() {
+        return signCode;
+    }
+
+    public void setSignCode(String signCode) {
+        this.signCode = signCode;
+    }
+
     public Integer getNodeNo() {
         return nodeNo;
     }
@@ -132,11 +160,11 @@ public class TSaltLinkPage implements Serializable {
         this.nodeNo = nodeNo;
     }
 
-    public Integer getSiteId() {
+    public Long getSiteId() {
         return siteId;
     }
 
-    public void setSiteId(Integer siteId) {
+    public void setSiteId(Long siteId) {
         this.siteId = siteId;
     }
 
@@ -146,6 +174,14 @@ public class TSaltLinkPage implements Serializable {
 
     public void setSiteNo(String siteNo) {
         this.siteNo = siteNo;
+    }
+
+    public String getScopeRoad() {
+        return scopeRoad;
+    }
+
+    public void setScopeRoad(String scopeRoad) {
+        this.scopeRoad = scopeRoad;
     }
 
     public Integer getShouldCount() {
@@ -234,5 +270,21 @@ public class TSaltLinkPage implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getSiteName() {
+        return siteName;
+    }
+
+    public void setSiteName(String siteName) {
+        this.siteName = siteName;
+    }
+
+    public String getSiteType() {
+        return siteType;
+    }
+
+    public void setSiteType(String siteType) {
+        this.siteType = siteType;
     }
 }

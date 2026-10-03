@@ -40,13 +40,15 @@ CREATE TABLE IF NOT EXISTS t_salt_iod_line (
 
 CREATE TABLE IF NOT EXISTS t_salt_link_page (
   id bigint NOT NULL COMMENT '主键',
-  bill_no varchar(64) DEFAULT NULL COMMENT '企业品种挂接代号',
+  bill_no varchar(64) DEFAULT NULL COMMENT '企业品种挂接代号（系统发，人手不收）',
+  sign_code varchar(64) DEFAULT NULL COMMENT '随行签认码（系统发，人手不收）',
   node_no int DEFAULT NULL COMMENT '适用区域层级序',
-  site_id int DEFAULT NULL COMMENT '所属定点企业',
+  site_id bigint DEFAULT NULL COMMENT '所属定点企业',
   site_no varchar(64) DEFAULT NULL COMMENT '所属企业代号',
+  scope_road varchar(128) DEFAULT NULL COMMENT '页归属的属地那一路(省—市—县，压在企业属地那一层)',
   should_count int DEFAULT NULL COMMENT '应挂品种数',
   done_count int DEFAULT NULL COMMENT '已挂品种数',
-  lack_count int DEFAULT NULL COMMENT '欠挂品种数',
+  lack_count int DEFAULT NULL COMMENT '欠挂品种数（服务层算后写回，只许看不许改）',
   content varchar(255) DEFAULT NULL COMMENT '随页交来的标签要件',
   status int DEFAULT NULL COMMENT '挂接进展 0待挂 1已挂讫 2压页',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
@@ -55,7 +57,8 @@ CREATE TABLE IF NOT EXISTS t_salt_link_page (
   update_by varchar(64) DEFAULT NULL COMMENT '更新者',
   update_time datetime DEFAULT NULL COMMENT '更新时间',
   remark varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_bill_no (bill_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='企业品种挂接簿页';
 
 CREATE TABLE IF NOT EXISTS t_salt_record_flow (
